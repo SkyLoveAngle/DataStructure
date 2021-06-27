@@ -1,4 +1,4 @@
-package Homework0223;
+package DataStructure.Homework0223;
 
 public class Node {
     public int val;

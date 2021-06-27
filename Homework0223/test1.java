@@ -1,21 +1,19 @@
-package Homework0223;
+package DataStructure.Homework0223;
 
 //输入一个链表，输出该链表中倒数第k个结点。
-
-import java.util.LinkedList;
 
 public class test1 {
     public static Node createList(){
         Node a = new Node(1);
-        Node b = new Node(3);
-        Node c = new Node(5);
-        Node d = new Node(7);
-        Node e = new Node(9);
-        Node f = new Node(9);
+        Node b = new Node(1);
+        Node c = new Node(2);
+        Node d = new Node(3);
+        Node e = new Node(5);
+        Node f = new Node(6);
         Node g = new Node(7);
-        Node h = new Node(5);
-        Node i = new Node(3);
-        Node j = new Node(1);
+        Node h = new Node(8);
+        Node i = new Node(9);
+        Node j = new Node(9);
         a.next = b;
         b.next = c;
         c.next = d;
@@ -152,6 +150,7 @@ public class test1 {
     }
 
     public static Node deleteDuplication(Node head) {
+
 //        if (head == null || head.next==null){
 //            return head;
 //        }
@@ -178,64 +177,129 @@ public class test1 {
 //            return head;
 //        }
 
+        //先考虑特殊的极端情况
         if (head==null){
             return null;
         }
+        //连表里只有一个节点
         if (head.next==null){
-            return null;
+            return head;
         }
-
+        //创建一个用来保存结果的链表，这是一个带傀儡节点的链表
+        //为了尾插方便，记录链表的尾部节点
         Node newHead = new Node(0);
         Node newTail = newHead;
         //遍历链表，判定其中是否存在重复的元素
         Node cur=head;
-        while (cur!=null && cur.next!=null){
-            if (cur.val == cur.next.val){
+        while ( cur != null ){
+            //此处的循环条件不可以颠倒顺序
+            //因为会触发短路求值，先求左边再求右边，如果此时cur为null，
+            // 那么先判断cur.next会触发空指针异常
+            if (cur.next != null && cur.val == cur.next.val){
+                //此处是对cur和cur.next进行解引用，就需要注意会不会产生空指针异常的情况
                 //发现cur是重复节点，就需要找接下来不重复节点的位置
+                while (cur != null && cur.next != null && cur.val == cur.next.val){
+                    cur=cur.next;
+                }
+                //上面的循环结束，要么是cur已经到达链表末尾，要么是cur遇到了重复节点的最后一个
+                //需要让cur再走一步
+                cur=cur.next;
             }else{
-                //cur不是重复节点
-                newTail
+                //cur不是重复节点，直接诶插入到newHead末尾
+                newTail.next = new Node(cur.val);
+                newTail = newTail.next;
+                cur=cur.next;
             }
         }
-
+        return newHead.next;
     }
 
+
     public static boolean isPalindrome(Node head) {
-        if (head == null || head.next == null){
+
+//        if (head == null || head.next == null){
+//            return true;
+//        }
+//
+//        Node fast = head;
+//        Node slow = head;
+//        while(fast.next != null && fast.next.next != null){
+//            slow = slow.next;
+//            fast = fast.next.next;
+//        }
+//        fast = slow.next;
+//        slow.next = null;
+//        Node node =null;
+//        while(fast != null){
+//            node = fast.next;
+//            fast.next = slow;
+//            slow = fast;
+//            fast = node;
+//        }
+//
+//        fast = head;
+//        boolean res = true;
+//        while (slow != null && fast != null) {
+//            if (slow.val != fast.val) {
+//                res = false;
+//                break;
+//            }
+//            slow = slow.next;
+//            fast = fast.next;
+//        }
+//        return res;
+
+        //判断特殊情况
+        if (head == null){
+            return true;
+        }
+        if (head.next == null){
             return true;
         }
 
-        Node fast = head;
-        Node slow = head;
-        while(fast.next != null && fast.next.next != null){
-            slow = slow.next;
-            fast = fast.next.next;
+        //把原来的链表复制一份
+        Node newHead = new Node(0);//傀儡节点
+        Node newTail = newHead;
+        for (Node cur = head;cur!=null;cur=cur.next){
+            newTail.next = new Node(cur.val);
+            newTail = newTail.next;
         }
-        fast = slow.next;
-        slow.next = null;
-        Node node =null;
-        while(fast != null){
-            node = fast.next;
-            fast.next = slow;
-            slow = fast;
-            fast = node;
-        }
-       //  node = slow;
-        fast = head;
-        boolean res = true;
-        while (slow != null && fast != null) {
-            if (slow.val != fast.val) {
-                res = false;
-                break;
+
+        Node DummyNext = newHead.next;
+        //把新链表进行逆置
+        Node prev = null;
+        Node cur = DummyNext;
+        while (cur != null){
+            Node next = cur.next;
+            if (next == null){
+                //cur就指向的就是最后一个节点，也就是逆置链表的头结点
+                DummyNext = cur;
             }
-            slow = slow.next;
-            fast = fast.next;
+            //逆置核心操作：掰道岔
+            cur.next = prev;
+            //更新循环变量
+            prev = cur;
+            cur = next;
         }
-        return res;
+
+        //对比两个链表是否相等
+        Node cur1 = head;
+        Node cur2 = DummyNext;
+        while (cur1 != null && cur2 != null) {
+            if (cur1.val != cur2.val) {
+                // 找到了反例, 不是回文
+                return false;
+            }
+            cur1 = cur1.next;
+            cur2 = cur2.next;
+        }
+        // 找了一圈下来也没找到反例, 于是就判定这是回文
+        return true;
     }
 
     public static void main(String[] args) {
         Node head = createList();
+
         System.out.print("创建一个普通链表，遍历打印其中所有元素：");
         print(head);
 
